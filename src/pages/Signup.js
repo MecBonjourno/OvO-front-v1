@@ -32,6 +32,7 @@ const Singup = () => {
       history.push('/login')
      }
     })
+    .catch(err => {console.log(err)})
   }
 
     return (
