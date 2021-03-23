@@ -1,32 +1,159 @@
-import React from 'react'
+import React, {useState, useEffect, useContext} from 'react'
+
+import {UserContext} from '../App'
 
 const Home = () => {
+
+    const [data, setData] = useState([])
+    const {state,dispatch} = useContext(UserContext)
+
+    useEffect(()=>{
+        fetch("/allposts",{
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("jwt")
+            }
+        })
+        .then(res=>res.json())
+        .then(result => {
+           setData(result.posts)
+           console.log(result.posts)
+        })
+    },[])
+
+    const LikePost = (id) => {
+        fetch("/like",{
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("jwt")
+            },
+            body: JSON.stringify({
+                postId: id,
+            })
+        }).then(res=>res.json())
+        .then(result => {
+            const newData = data.map(item =>{
+                if(item._id==result._id){
+                    return result
+                }else{
+                    return item
+                }
+            })
+            setData(newData)
+            console.log(result)
+        })
+        .catch(err =>{console.log(err)});
+    }
+
+    const UnLikePost = (id) => {
+        fetch("/unlike",{
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("jwt")
+            },
+            body: JSON.stringify({
+                postId: id,
+            })
+        }).then(res=>res.json())
+        .then(result => {
+            const newData = data.map(item =>{
+                if(item._id==result._id){
+                    return result
+                }else{
+                    return item
+                }
+            })
+            setData(newData)
+            console.log(result)
+        })
+        .catch(err =>{console.log(err)});
+
+    }
+
+    const Commented = (text, postId) => {
+        fetch("/comment", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("jwt")
+            },
+            body: JSON.stringify({
+                postId,
+                text
+            })
+        }).then(res => res.json())
+        .then(result => {
+            const newData = data.map(item =>{
+                if(item._id==result._id){
+                    return result
+                }else{
+                    return item
+                }
+            })
+            setData(newData)
+            console.log(result)
+        })
+        .catch(err =>{console.log(err)});
+    }
+
+    const DeletePost = (postId) => {
+        fetch(`/delete/${postId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("jwt")
+            },
+        }).then(res => res.json())
+        .then(result => {
+            console.log(result)
+            const newData = data.filter(item => {
+                return item._id !== result._id
+            })
+            setData(newData)
+        })
+    }
+
+
     return (
         <div>
-            <div className="card home-card">
-                <h5>Zago</h5>
+                {data.map(item=> {
+                    return (
+                <div className="card home-card" key={item._id} >
+                <h5>{item.postedBy.name}
+                {item.postedBy._id == state._id &&
+                 <i className="material-icons" style={{float: 'right'}} onClick={()=>DeletePost(item._id)}>delete</i>
+                }
+                 </h5>
                  <div className="card-image">
-                     <img src="https://images.unsplash.com/photo-1452460028020-ee243f477860?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=1000&q=80" />
+                     <img src={item.photo} />
                  </div>
                  <div className="card-content"> 
-                 <i class="material-icons" style={{color: "red"}}>favorite</i>
-                    <h6>Foda Boa: 9/10</h6>
-                    <p>Transei aqui uma vez</p>
+                 {item.likes.includes(state._id)
+                    ?
+                    <i className="material-icons" onClick={ () => {UnLikePost(item._id)} }>thumb_down</i>
+                    :
+                    <i className="material-icons" onClick={ () => {LikePost(item._id)} }>thumb_up</i>
+                 }
+                    <h6>{item.likes.length} likes</h6>
+                    <h6>{item.title}</h6>
+                    <p>{item.body}</p>
+                    {
+                        item.comments.map(record => {
+                            return(
+                                <h6 key={record._id}><span style={{fontWeight: "500"}}>{record.postedBy.name}</span> {record.text}</h6>
+                            )
+                        })
+                    }
+                    <form onSubmit={ (e) =>{
+                        e.preventDefault()
+                        Commented(e.target[0].value, item._id)
+                    }}>   
                     <input type="text" placeholder="comenta ai" />
+                 </form>
                  </div>
-            </div>
-            <div className="card home-card">
-                <h5>Zago</h5>
-                 <div className="card-image">
-                     <img src="https://images.unsplash.com/photo-1487252502161-75020a813bf0?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=1020&q=80" />
-                 </div>
-                 <div className="card-content"> 
-                 <i class="material-icons" style={{color: "red"}}>favorite</i>
-                    <h6>Comi na praia e gozei na bunda dela: 10/10</h6>
-                    <p>A areia grudo em tudo kkkkk</p>
-                    <input type="text" placeholder="comenta ai" />
-                 </div>
-            </div>
+            </div>)
+                })}
+            
         </div>
     )
 }
