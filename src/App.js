@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Profile from './pages/Profile'
 import Signup from './pages/Signup'
 import Createpost from './pages/CreatePost'
+import UserProfile from './pages/UserProfile'
 
 import {reducer, initialState} from './reducers/userReducer'
 
@@ -32,6 +33,7 @@ const Routing = () => {
       <Route path="/login" component={Login}/>
       <Route path="/signup" component={Signup}/>
       <Route path="/profile" component={Profile}/>
+      <Route exact path="/user/:userId" component={UserProfile}/> {/* //talvez seja mais interessante colocar direto o userID */}
       <Route path="/createpost" component={Createpost}/>
     </Switch>
   )

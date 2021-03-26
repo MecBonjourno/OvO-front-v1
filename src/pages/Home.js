@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react'
-
+import {Link} from 'react-router-dom'
 import {UserContext} from '../App'
 
 const Home = () => {
@@ -118,11 +118,11 @@ const Home = () => {
         <div>
                 {data.map(item=> {
                     return (
-                <div className="card home-card" key={item._id} >
-                <h5>{item.postedBy.name}
-                {item.postedBy._id == state._id &&
-                 <i className="material-icons" style={{float: 'right'}} onClick={()=>DeletePost(item._id)}>delete</i>
-                }
+                <div className="card home-card #00acc1 cyan darken-1" key={item._id} >
+                <h5 className="home-card-postedBy"><Link to={item.postedBy._id !== state._id ? "/user/"+item.postedBy._id : "/profile"} style={{color: "#000!important"}}>{item.postedBy.name}</Link>
+                    {item.postedBy._id === state._id &&
+                    <i className="material-icons" style={{float: 'right'}} onClick={()=>DeletePost(item._id)}>delete</i>
+                    }
                  </h5>
                  <div className="card-image">
                      <img src={item.photo} />
