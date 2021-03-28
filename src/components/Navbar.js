@@ -8,8 +8,9 @@ const Navbar = () => {
   const renderList = () => {
     if(state){
       return [ 
-        <li><Link to="/profile">Profile</Link></li>,
-          <li><Link to="/createpost">Post</Link></li>,
+        <li key={"a"}><Link  to="/profile">Profile</Link></li>,
+          <li key={"b"}><Link  to="/createpost">Post</Link></li>,
+          <li key={"c"}><Link  to="/followingposts">My Feed</Link></li>,
           <li>
             <button className="btn waves-effect waves-light #212121 grey darken-4" type="submit" name="action" 
             onClick={()=> {
@@ -24,8 +25,8 @@ const Navbar = () => {
       ]
     }else {
         return [
-          <li><Link to="/signup">SignUp</Link></li>,
-          <li><Link to="/login">Login</Link></li>
+          <li key={"d"}><Link  to="/signup">SignUp</Link></li>,
+          <li key={"e"}><Link  to="/login">Login</Link></li>
         ]
     }
   }

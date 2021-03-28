@@ -7,6 +7,10 @@ const Profile = () => {
     const [userProfile, setProfile] = useState(null)
     const {state,dispatch} = useContext(UserContext)
     const {userId} = useParams()
+
+    const [showFollow, setShowFollow] = useState(state?!state.following.includes(userId):true)
+
+
     useEffect(()=>{
         fetch(`/user/${userId}`,{
         headers:{
@@ -17,6 +21,61 @@ const Profile = () => {
             setProfile(result)
         })
     },[])
+
+    const followUser = () => {
+        fetch("/follow",{
+            method: "PUT",
+            headers:{
+                 "Content-Type": "application/json",
+                 "Authorization": "Bearer " + localStorage.getItem("jwt")
+                },
+            body: JSON.stringify({
+                followId: userId,
+            })
+        }).then(res=>res.json)
+        .then(data=>{
+            dispatch({type:"UPDATE", payload:{following: data.following, followers: data.followers}})
+            localStorage.setItem("user", JSON.stringify(data))
+            setProfile((prevState) => {
+                return {
+                    ...prevState,
+                    user:{
+                        ...prevState.user,
+                        followers: [...prevState.user.followers, data._id]
+                    }
+                }
+            })
+        })
+        setShowFollow(false)
+    }
+
+    const unfollowUser = () => {
+        fetch("/unfollow",{
+            method: "PUT",
+            headers:{
+                 "Content-Type": "application/json",
+                 "Authorization": "Bearer " + localStorage.getItem("jwt")
+                },
+            body: JSON.stringify({
+                unfollowId: userId,
+            })
+        }).then(res=>res.json)
+        .then(data=>{
+            dispatch({type:"UPDATE", payload:{following: data.following, followers: data.followers}})
+            localStorage.setItem("user", JSON.stringify(data)) 
+            setProfile((prevState) => {
+                const newFollower = prevState.user.followers.filter(item=>item !== data._id)
+                return {
+                    ...prevState,
+                    user:{
+                        ...prevState.user,
+                        followers: newFollower
+                    }
+                }
+            })
+        })
+        setShowFollow(true)
+    }
 
     return (
         <>
@@ -29,17 +88,28 @@ const Profile = () => {
                 borderBottom: "1px solid",
             }}>
                 <div>
-                    <img style={{width: "160px", height: "160px", borderRadius: "50%" }} src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" /> 
+                    <img style={{width: "160px", height: "160px", borderRadius: "50%" }} 
+                    src={userProfile.user.pic} /> 
                 </div>
                 <div>
                     <h4>{userProfile.user.name}</h4>
                     <h5>{userProfile.user.email}</h5>
                     <div style={{display: 'flex', flexDirection: 'column'}}>
-                        <h6> Nota da Chupada: 6.7/10</h6>
-                        <h6> Tamanho do Amigo: 3/10</h6>
-                        <h6> Metida com força: 9/10</h6>
-                        <h6> {userProfile.posts.length}</h6>
+                        <h6> {userProfile.user.followers.length} Followers</h6>
+                        <h6> {userProfile.user.following.length} Following</h6>
+                        <h6> {userProfile.posts.length} Posts</h6>
                     </div>
+                    { showFollow ? 
+                <button style={{margin: "8px"}} className="btn waves-effect waves-light #212121 grey darken-4" type="submit" name="action" onClick={()=>followUser()}>
+                Follow
+              </button> 
+              : 
+              <button style={{margin: "8px"}} className="btn waves-effect waves-light #212121 grey darken-4" type="submit" name="action" onClick={()=>unfollowUser()}>
+              Unfollow
+            </button>   
+                }
+                    
+                  
                 </div>
             </div>
             <div className="gallery">

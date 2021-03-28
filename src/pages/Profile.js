@@ -4,6 +4,9 @@ import { UserContext } from '../App'
 const Profile = () => {
     const [myPics, setMyPics] = useState([])
     const {state,dispatch} = useContext(UserContext)
+    const [image,setImage] = useState("")
+    // const [url,setUrl] = useState(undefined)
+
     useEffect(()=>{
         fetch("/myposts",{
         headers:{
@@ -13,7 +16,48 @@ const Profile = () => {
             setMyPics(result.mypost)
         })
     },[])
-console.log(myPics)
+
+    useEffect(()=>{
+        if(image){
+            const data = new FormData()
+            data.append("file", image)
+            data.append("upload_preset", "ovo-test")
+            data.append("cloud_name","ovoovo")
+            fetch("	https://api.cloudinary.com/v1_1/ovoovo/image/upload", {
+              method: "POST",
+              body: data,
+            })
+            .then(res => res.json())
+            .then(data => {
+            //   setUrl(data.url)
+            //   console.log(data.url + " update perfil")
+            //   localStorage.setItem("user", JSON.stringify({...state,pic:data.url}))
+              fetch("/updatepic",{
+                  method: "PUT",
+                  headers: {
+                      'Content-Type':"application/json",
+                      "Authorization": "Bearer " + localStorage.getItem("jwt")
+                    },
+                    body: JSON.stringify({
+                        pic: data.url
+                    })
+              }).then(res => res.json())
+              .then(
+                  result => {
+                      console.log(result)
+                    localStorage.setItem("user", JSON.stringify({...state, pic:result.pic}))
+                    dispatch({type:"UPDATEPIC", payload:result.pic})
+                })
+            //   window.location.reload()
+            })
+            .catch(err => console.log(err))
+        }
+    },[image])
+
+    const updatedProfilePic = (file) => {
+        setImage(file)
+    }
+
     return (
         <div style={{maxWidth: "550px", margin: "0 auto"}}>
             <div style={{
@@ -23,14 +67,23 @@ console.log(myPics)
                 borderBottom: "1px solid",
             }}>
                 <div>
-                    <img style={{width: "160px", height: "160px", borderRadius: "50%" }} src="https://images.unsplash.com/photo-1586287011575-a23134f797f9?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" /> 
+                    <img style={{width: "160px", height: "160px", borderRadius: "50%" }} 
+                    src={state?state.pic:"loading"}/> 
+             <div className="file-field input-field"> 
+                  <div className="btn #757575 grey darken-1">
+                      <span>Select Profile Pic</span>
+                      <input type="file" onChange={(e)=>updatedProfilePic(e.target.files[0])}/>
+                  </div>
+                 
                 </div>
+                </div>
+               
                 <div>
                     <h4>{state?state.name:"loading"}</h4>
                     <div style={{display: 'flex', flexDirection: 'column'}}>
-                        <h6> Nota da Chupada: 6.7/10</h6>
-                        <h6> Tamanho do Amigo: 3/10</h6>
-                        <h6> Metida com força: 9/10</h6>
+                        <h6> {myPics.length} Posts </h6>
+                        <h6> {state?state.followers.length: "loading"} followers </h6>
+                        <h6> {state?state.followers.length: "loading"} following </h6>
                     </div>
                 </div>
             </div>

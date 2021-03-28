@@ -9,6 +9,7 @@ import Profile from './pages/Profile'
 import Signup from './pages/Signup'
 import Createpost from './pages/CreatePost'
 import UserProfile from './pages/UserProfile'
+import FollowingPost from './pages/FollowingPosts'
 
 import {reducer, initialState} from './reducers/userReducer'
 
@@ -30,6 +31,7 @@ const Routing = () => {
   return(
     <Switch>
       <Route exact path="/" component={Home}/>
+      <Route path="/followingposts" component={FollowingPost}/>
       <Route path="/login" component={Login}/>
       <Route path="/signup" component={Signup}/>
       <Route path="/profile" component={Profile}/>
